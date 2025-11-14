@@ -1,0 +1,179 @@
+{% extends 'dealership/base.html' %}
+
+{% block title %}Home - Car Dealership{% endblock %}
+
+{% block extra_css %}
+<style>
+    .hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 4rem 2rem;
+        text-align: center;
+        border-radius: 10px;
+        margin-bottom: 3rem;
+    }
+    
+    .hero h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin: 2rem 0;
+        flex-wrap: wrap;
+    }
+    
+    .stat-box {
+        background: white;
+        padding: 2rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        text-align: center;
+        min-width: 200px;
+    }
+    
+    .stat-box h3 {
+        font-size: 2.5rem;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+    
+    .featured-section h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        color: #333;
+    }
+    
+    .car-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .car-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .car-card h3 {
+        color: #667eea;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+    
+    .car-info {
+        margin-bottom: 1rem;
+    }
+    
+    .car-info p {
+        margin: 0.5rem 0;
+        color: #666;
+    }
+    
+    .car-price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+        margin: 1rem 0;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #667eea;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+    
+    .badge-new {
+        background: #28a745;
+    }
+    
+    .badge-used {
+        background: #6c757d;
+    }
+    
+    .badge-certified {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .text-center {
+        text-align: center;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <h2>Welcome to Our Car Dealership</h2>
+    <p>Find your dream car from our extensive collection</p>
+    <a href="{% url 'dealership:car_list' %}" class="btn">Browse All Cars</a>
+</div>
+
+<div class="stats">
+    <div class="stat-box">
+        <h3>{{ total_cars }}</h3>
+        <p>Cars Available</p>
+    </div>
+    <div class="stat-box">
+        <h3>100+</h3>
+        <p>Happy Customers</p>
+    </div>
+    <div class="stat-box">
+        <h3>15+</h3>
+        <p>Years in Business</p>
+    </div>
+</div>
+
+{% if featured_cars %}
+<div class="featured-section">
+    <h2>Featured Cars</h2>
+    <div class="car-grid">
+        {% for car in featured_cars %}
+        <div class="car-card">
+            <h3>{{ car.year }} {{ car.make }} {{ car.model }}</h3>
+            <div class="car-info">
+                <span class="badge badge-{{ car.condition }}">{{ car.get_condition_display }}</span>
+                {% if car.color %}
+                <p><strong>Color:</strong> {{ car.color }}</p>
+                {% endif %}
+                {% if car.mileage %}
+                <p><strong>Mileage:</strong> {{ car.mileage|floatformat:0 }} miles</p>
+                {% endif %}
+            </div>
+            <div class="car-price">${{ car.price|floatformat:2 }}</div>
+            <a href="{% url 'dealership:car_detail' car.pk %}" class="btn">View Details</a>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="text-center">
+        <a href="{% url 'dealership:car_list' %}" class="btn btn-secondary">View All Cars</a>
+    </div>
+</div>
+{% else %}
+<div class="text-center">
+    <p>No cars available at the moment. Please check back later!</p>
+</div>
+{% endif %}
+{% endblock %}
