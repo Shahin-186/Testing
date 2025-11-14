@@ -1,0 +1,225 @@
+{% extends 'dealership/base.html' %}
+
+{% block title %}Browse Cars - Car Dealership{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    
+    .page-header h2 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .filters {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .filters form {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        align-items: end;
+    }
+    
+    .filter-group {
+        flex: 1;
+        min-width: 200px;
+    }
+    
+    .filter-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: #333;
+    }
+    
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+    }
+    
+    .car-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+    
+    .car-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .car-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+    }
+    
+    .car-card h3 {
+        color: #667eea;
+        margin-bottom: 1rem;
+        font-size: 1.3rem;
+    }
+    
+    .car-info {
+        margin-bottom: 1rem;
+    }
+    
+    .car-info p {
+        margin: 0.5rem 0;
+        color: #666;
+    }
+    
+    .car-price {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #28a745;
+        margin: 1rem 0;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 0.25rem 0.75rem;
+        background: #667eea;
+        color: white;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-right: 0.5rem;
+    }
+    
+    .badge-new {
+        background: #28a745;
+    }
+    
+    .badge-used {
+        background: #6c757d;
+    }
+    
+    .badge-certified {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .pagination {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .pagination a,
+    .pagination span {
+        padding: 0.5rem 1rem;
+        background: white;
+        border-radius: 5px;
+        text-decoration: none;
+        color: #667eea;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .pagination .current {
+        background: #667eea;
+        color: white;
+    }
+    
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h2>Browse Our Car Inventory</h2>
+    <p>{{ page_obj.paginator.count }} car{{ page_obj.paginator.count|pluralize }} available</p>
+</div>
+
+<div class="filters">
+    <form method="get">
+        <div class="filter-group">
+            <label for="condition">Condition</label>
+            <select name="condition" id="condition">
+                <option value="">All</option>
+                <option value="new" {% if request.GET.condition == 'new' %}selected{% endif %}>New</option>
+                <option value="used" {% if request.GET.condition == 'used' %}selected{% endif %}>Used</option>
+                <option value="certified" {% if request.GET.condition == 'certified' %}selected{% endif %}>Certified Pre-Owned</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="make">Make</label>
+            <input type="text" name="make" id="make" placeholder="e.g., Toyota" value="{{ request.GET.make }}">
+        </div>
+        <div class="filter-group">
+            <label for="max_price">Max Price</label>
+            <input type="number" name="max_price" id="max_price" placeholder="e.g., 30000" value="{{ request.GET.max_price }}">
+        </div>
+        <div class="filter-group">
+            <button type="submit" class="btn">Filter</button>
+        </div>
+    </form>
+</div>
+
+{% if cars %}
+<div class="car-grid">
+    {% for car in cars %}
+    <div class="car-card">
+        <h3>{{ car.year }} {{ car.make }} {{ car.model }}</h3>
+        <div class="car-info">
+            <span class="badge badge-{{ car.condition }}">{{ car.get_condition_display }}</span>
+            {% if car.color %}
+            <p><strong>Color:</strong> {{ car.color }}</p>
+            {% endif %}
+            {% if car.mileage %}
+            <p><strong>Mileage:</strong> {{ car.mileage|floatformat:0 }} miles</p>
+            {% endif %}
+        </div>
+        <div class="car-price">${{ car.price|floatformat:2 }}</div>
+        <a href="{% url 'dealership:car_detail' car.pk %}" class="btn">View Details</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% if page_obj.has_other_pages %}
+<div class="pagination">
+    {% if page_obj.has_previous %}
+    <a href="?page=1{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">&laquo; First</a>
+    <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Previous</a>
+    {% endif %}
+    
+    <span class="current">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+    
+    {% if page_obj.has_next %}
+    <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Next</a>
+    <a href="?page={{ page_obj.paginator.num_pages }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">Last &raquo;</a>
+    {% endif %}
+</div>
+{% endif %}
+
+{% else %}
+<div class="no-results">
+    <h3>No cars found</h3>
+    <p>Try adjusting your filters or browse all cars.</p>
+    <a href="{% url 'dealership:car_list' %}" class="btn">Clear Filters</a>
+</div>
+{% endif %}
+{% endblock %}
