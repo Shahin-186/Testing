@@ -1,0 +1,213 @@
+{% extends 'dealership/base.html' %}
+
+{% block title %}{{ car.year }} {{ car.make }} {{ car.model }} - Car Dealership{% endblock %}
+
+{% block extra_css %}
+<style>
+    .car-detail {
+        background: white;
+        border-radius: 10px;
+        padding: 2rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .car-header {
+        border-bottom: 2px solid #667eea;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+    }
+    
+    .car-header h2 {
+        font-size: 2rem;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .car-header .badge {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background: #667eea;
+        color: white;
+        border-radius: 20px;
+        font-size: 1rem;
+    }
+    
+    .badge-new {
+        background: #28a745;
+    }
+    
+    .badge-used {
+        background: #6c757d;
+    }
+    
+    .badge-certified {
+        background: #ffc107;
+        color: #333;
+    }
+    
+    .car-price {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #28a745;
+        margin: 1.5rem 0;
+    }
+    
+    .car-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+    
+    .detail-item {
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 5px;
+        border-left: 4px solid #667eea;
+    }
+    
+    .detail-item label {
+        display: block;
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 0.25rem;
+        font-size: 0.9rem;
+    }
+    
+    .detail-item p {
+        font-size: 1.1rem;
+        color: #333;
+        margin: 0;
+    }
+    
+    .description-section {
+        margin: 2rem 0;
+    }
+    
+    .description-section h3 {
+        font-size: 1.5rem;
+        color: #333;
+        margin-bottom: 1rem;
+    }
+    
+    .description-section p {
+        line-height: 1.8;
+        color: #666;
+    }
+    
+    .availability {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        border-radius: 5px;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+    
+    .available {
+        background: #d4edda;
+        color: #155724;
+    }
+    
+    .unavailable {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    
+    .actions {
+        margin-top: 2rem;
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .back-link {
+        display: inline-block;
+        margin-bottom: 1rem;
+        color: #667eea;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .back-link:hover {
+        text-decoration: underline;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'dealership:car_list' %}" class="back-link">&larr; Back to Inventory</a>
+
+<div class="car-detail">
+    <div class="car-header">
+        <h2>{{ car.year }} {{ car.make }} {{ car.model }}</h2>
+        <span class="badge badge-{{ car.condition }}">{{ car.get_condition_display }}</span>
+        <div class="availability {% if car.is_available %}available{% else %}unavailable{% endif %}">
+            {% if car.is_available %}
+                ✓ Available
+            {% else %}
+                ✗ Sold
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="car-price">${{ car.price|floatformat:2 }}</div>
+    
+    <div class="car-details">
+        <div class="detail-item">
+            <label>Make</label>
+            <p>{{ car.make }}</p>
+        </div>
+        
+        <div class="detail-item">
+            <label>Model</label>
+            <p>{{ car.model }}</p>
+        </div>
+        
+        <div class="detail-item">
+            <label>Year</label>
+            <p>{{ car.year }}</p>
+        </div>
+        
+        <div class="detail-item">
+            <label>Condition</label>
+            <p>{{ car.get_condition_display }}</p>
+        </div>
+        
+        {% if car.color %}
+        <div class="detail-item">
+            <label>Color</label>
+            <p>{{ car.color }}</p>
+        </div>
+        {% endif %}
+        
+        {% if car.mileage %}
+        <div class="detail-item">
+            <label>Mileage</label>
+            <p>{{ car.mileage|floatformat:0 }} miles</p>
+        </div>
+        {% endif %}
+        
+        <div class="detail-item">
+            <label>VIN</label>
+            <p>{{ car.vin }}</p>
+        </div>
+    </div>
+    
+    {% if car.description %}
+    <div class="description-section">
+        <h3>Description</h3>
+        <p>{{ car.description }}</p>
+    </div>
+    {% endif %}
+    
+    <div class="actions">
+        {% if car.is_available %}
+        <button class="btn" onclick="alert('Contact our sales team at: sales@cardealership.com or call (555) 123-4567')">Contact Sales</button>
+        <button class="btn btn-secondary" onclick="alert('Schedule a test drive by calling (555) 123-4567')">Schedule Test Drive</button>
+        {% else %}
+        <p style="color: #721c24;">This vehicle is no longer available.</p>
+        {% endif %}
+        <a href="{% url 'dealership:car_list' %}" class="btn btn-secondary">Browse More Cars</a>
+    </div>
+</div>
+{% endblock %}
